@@ -1,10 +1,14 @@
 /*
+Exercício 1 - Representação numérica.
 A) 
     * somaSequencia(float *dados, unsigned int tam): soma todos os dados do vetor.
     * somaPar(float *dados, unsigned int tam): soma todos os elementos do vetor, porém usando
     * divisão e conquista.
 B)
     O resultado de somaPar é mais preciso.
+    o somaSequencia() vai somando os números sequencialmente o que vai gerando números com expoentes diferentes, 
+    o que vai gerando erros a medida que a soma vai evoluindo. Enquanto isso, o somaPar() soma números dois a dois com expoentes iguais
+    ou números com expoentes suficientemente perto, fazendo com que a precisão seja melhor. 
 
 */
 
@@ -12,12 +16,12 @@ B)
 #include <stdlib.h>
 
 #define VALOR 0.6f
-#define NUM_ELEMENTOS 1000000
+#define NUM_ELEMENTOS 10
 
 float somaSequencia( float *dados, unsigned int tam ) {
     float soma = 0.0;
     while ( tam-- ) {
-        //printf("soma -> %1.15f, dados[tam] -> %1.15f\n", soma, dados[tam]);
+        printf("soma -> %1.15f, dados[tam] -> %1.15f\n", soma, dados[tam]);
         soma += dados[tam];
     }
     return soma;
