@@ -8,7 +8,12 @@ B)
     O resultado de somaPar é mais preciso.
     o somaSequencia() vai somando os números sequencialmente o que vai gerando números com expoentes diferentes, 
     o que vai gerando erros a medida que a soma vai evoluindo. Enquanto isso, o somaPar() soma números dois a dois com expoentes iguais
-    ou números com expoentes suficientemente perto, fazendo com que a precisão seja melhor. 
+    ou números com expoentes suficientemente perto, fazendo com que a precisão seja melhor.
+
+C) 
+    A medida que o NUM_elementos vai aumentando a soma perdendo precisão. Isso ocorre porque a precisão de um float são 7 digitos (24 bit), então
+    a partir de um certo momento, será somado um número com um expoente muito grande com um muito pequeno. A parte muito pequena será ignorada
+    (ou truncada) e ficará somento os primeiros dígitos do float. 
 
 */
 
@@ -16,12 +21,12 @@ B)
 #include <stdlib.h>
 
 #define VALOR 0.6f
-#define NUM_ELEMENTOS 10
+#define NUM_ELEMENTOS 100000000
 
 float somaSequencia( float *dados, unsigned int tam ) {
     float soma = 0.0;
     while ( tam-- ) {
-        printf("soma -> %1.15f, dados[tam] -> %1.15f\n", soma, dados[tam]);
+        //printf("soma -> %1.15f, dados[tam] -> %1.15f\n", soma, dados[tam]);
         soma += dados[tam];
     }
     return soma;
