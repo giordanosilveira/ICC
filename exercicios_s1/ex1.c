@@ -21,8 +21,24 @@ C)
 #include <stdlib.h>
 
 #define VALOR 0.6f
-#define NUM_ELEMENTOS 100000000
+#define NUM_ELEMENTOS 10000
 
+/*D) A soma de Kaham encontra mais precisa que o somatório convencional, porém menos preciso que o somatório 2 a 2.*/
+float somaKahan(float *dados, unsigned int tam) {
+    float soma = 0.0;
+    float error = 0.0;
+
+    while(tam--) {
+
+        float y = dados[tam] - error;
+        float t = soma + y;
+        error = (t - soma) - y;
+        soma = t;
+
+    }
+
+    return soma;
+}
 float somaSequencia( float *dados, unsigned int tam ) {
     float soma = 0.0;
     while ( tam-- ) {
@@ -53,6 +69,10 @@ void main() {
 
     float soma2 = somaPar( dados, NUM_ELEMENTOS );
     printf("Soma par: %1.15f\n", soma2);
+
+    float soma3 = somaKahan( dados, NUM_ELEMENTOS );
+    printf("Soma Kaham: %1.15f\n", soma3);
+
 
     free (dados);
 }
