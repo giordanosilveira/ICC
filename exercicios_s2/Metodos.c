@@ -110,30 +110,42 @@ int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
     return 0;
 }
 
-
-/*!
-  \brief Essa função calcula a norma L2 do resíduo de um sistema linear 
-
-  \param SL Ponteiro para o sistema linear
-  \param x Solução do sistema linear
-*/
 real_t normaL2Residuo(SistLinear_t *SL, real_t *x)
 {
-    
+
+    real_t soma = 0.0;
+    // Pecorre o vetor de soluções
+    for (int i = 0; i < SL->n; ++i) {
+
+        // Soma o quadrado dos elementos das soluções
+        soma = soma + pow(x[i], 2);
+    }
+
+    // Retorna a raíz quadrada da soma.
+    return sqrt(soma);
+
 }
 
 
-/*!
-  \brief Método de Gauss-Seidel
 
-  \param SL Ponteiro para o sistema linear
-  \param x ponteiro para o vetor solução
-  \param erro menor erro aproximado para encerrar as iterações
-  \param tTotal tempo total em milisegundos gastos pelo método
+real_t calcularNormaMaxErroAbsoluto(real_t *aux, real_t *x, int tam) {
 
-  \return código de erro. Um nr positivo indica sucesso e o nr
-          de iterações realizadas. Um nr. negativo indica um erro.
-  */
+
+    real_t max = ABS(x[0]-aux[0]);
+
+    //Percorre todos os termos
+    for (int i = 1; i < tam; ++i) {
+
+        // Se o módulo da subtração é maior que max
+        if (ABS(x[i]-aux[i]) > max) {
+            max = ABS(x[i]-aux[i]);
+        }
+    }
+    return max;
+
+}
+
+
 int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 {
 
@@ -143,7 +155,7 @@ int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
     memset(x, 0.0, (SL->n)*sizeof(real_t)); //Pode dar seg fault aqui
     
     // Enquanto o número máximo de interações não foi atingido e a norma máxima do erro é maior que o erro, executa esse método.
-    while ((n_interacoes < MAXIT) && (calcularNormaMaxErroAbsoluto(aux, x) > ERRO)) {
+    while ((n_interacoes < MAXIT) && (calcularNormaMaxErroAbsoluto(aux, x, SL->n) > ERRO)) {
         
         copiarVetor(aux, x, SL->n);
 
@@ -169,20 +181,45 @@ int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 
 }
 
-
-/*!
-  \brief Método de Refinamento
-
-  \param SL Ponteiro para o sistema linear
-  \param x ponteiro para o vetor solução
-  \param erro menor erro aproximado para encerrar as iterações
-  \param tTotal tempo total em milisegundos gastos pelo método
-
-  \return código de erro. Um nr positivo indica sucesso e o nr
-          de iterações realizadas. Um nr. negativo indica um erro.
-  */
 int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 {
+
+    int i = 0;
+    double tempo;
+    real_t *residuo = alocarVetor(SL->n, sizeof(real_t));   //Vetor de resíduo
+
+    // Enquanto o número de interações for menor que tTotal
+    while ((i < tTotal)) {
+        
+        // Percorre a matriz
+        for (int j = 0; j < SL->n; ++j){
+            real_t soma = 0.0;
+            for (int k = 0; k < SL->n; ++k){
+                // Realiza a soma das colunas da linha 'j' com suas respctivas soluções
+                soma = soma + SL->A[j][k]*x[k]; 
+            
+            }
+            // Calcula o resíduo
+            residuo[j] = SL->b[j] - soma;
+        }
+
+        // Verifica se a norma L2 do residuo calculado é menor que o erro, se sim, para o programa e retorna i
+        if (normaL2Residuo(SL, residuo) < erro) {
+            return i;
+        }
+
+        ++i;    // Incrementa o número de interações.
+
+        // Se não for, calcula novamente a eliminação de Gauss com o resíduo como termo independente.
+        //Aqui eu tenho que passar o resíduo no SL->b, 
+        // também tenho que mandar uma cópia do Sistema Linear
+        if (eliminacaoGauss(SL, x, &tempo) < 0 ) {
+            perror("Deu algum erro na eliminação de Gauss");
+            return -1;
+        }
+
+    }
+
 
 }
 

@@ -21,10 +21,10 @@ double timestamp(void);
  * @brief Aloca um vetor de tamanho tam*sizeof
  * 
  * @param tam (int) : tamanho total do vetor.
- * @param sizeof (int) : tamanho dos elementos do vetor.
+ * @param size (int) : tamanho dos elementos do vetor.
  * @return (real_t*) : ponteiro para esse vetor.
  */
-real_t *alocarVetor(int tam, int sizeof);
+real_t *alocarVetor(int tam, int size);
 
 /**
  * @brief Copia o vetor origem para o vetor destino.

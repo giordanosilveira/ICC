@@ -47,8 +47,26 @@ void trocarLinhas(SistLinear_t* SL, int i, int max_pivo);
 int encontrarPivoMax(SistLinear_t *SL, int comeco);
 
 
-// Calcula a normaL2 do resíduo
+/*!
+  \brief Essa função calcula a norma L2 do resíduo de um sistema linear 
+
+  \param SL (SistLinear_t) : Ponteiro para o sistema linear
+  \param x (real_t *) : Solução do sistema linear
+  \return (real_t) : Norma L2.
+*/
 real_t normaL2Residuo(SistLinear_t *SL, real_t *x);
+
+
+/**
+ * @brief Calcula a norma máxima do erro absoluto.
+ * 
+ * @param aux (real_t *) : Vetor com os valores das incógnitas anteriores.
+ * @param x (real_t*) : Vetor com os valores das incóginitas atuais.
+ * @param tam (int) : tamanho do vetor.
+ * @return (real_t) : Norma maxima do erro absoluto. 
+ */
+real_t calcularNormaMaxErroAbsoluto(real_t *aux, real_t *x, int tam);
+
 
 /*!
   \brief Método da Eliminação de Gauss
@@ -61,10 +79,32 @@ real_t normaL2Residuo(SistLinear_t *SL, real_t *x);
 */
 int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal);
 
-// Método de Refinamento
+
+/*!
+  \brief Método de Refinamento
+
+  \param SL Ponteiro para o sistema linear
+  \param x ponteiro para o vetor solução
+  \param erro menor erro aproximado para encerrar as iterações
+  \param tTotal tempo total em milisegundos gastos pelo método
+
+  \return código de erro. Um nr positivo indica sucesso e o nr
+          de iterações realizadas. Um nr. negativo indica um erro.
+  */
 int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal);
 
-// Método de Gauss-Seidel
+
+/*!
+  \brief Método de Gauss-Seidel
+
+  \param SL Ponteiro para o sistema linear
+  \param x ponteiro para o vetor solução
+  \param erro menor erro aproximado para encerrar as iterações
+  \param tTotal tempo total em milisegundos gastos pelo método
+
+  \return código de erro. Um nr positivo indica sucesso e o nr
+          de iterações realizadas. Um nr. negativo indica um erro.
+*/
 int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal);
 
 
