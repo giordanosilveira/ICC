@@ -8,9 +8,10 @@
         Para números não normalizados, o expoente vai para 0, porém a mantissa é um número diferente
     de 0. Além disso, para números muito pequenos não a distinção de um para outro. Eles atingem um número
     mínimo e permanecem neste número, ou seja, precisão dos números diminui bruscamente.
-        Para números normalizados a precisão aumenta. Há muito mais números entre 1.0e-38 e 2.0e-38 do que 1.0e-45 e 2.0e-45 que são número
-    não normalizados. Ou seja, quando os números são normalizados e possível representar muito mais números
-    entre dois floats perto do zero do que quando os números são denormalizados. 
+        Para números normalizados a precisão aumenta. 
+    Há muito mais números entre 1.0e-38 e 2.0e-38 do que 1.0e-45 e 2.0e-45 que são número não normalizados. 
+    Ou seja, quando os números são normalizados é possível representar muito mais números entre dois floats perto do zero 
+    do que quando os números são denormalizados. 
 
 */
 

@@ -17,5 +17,23 @@ typedef double rtime_t;
 // Funções
 double timestamp(void);
 
+/**
+ * @brief Aloca um vetor de tamanho tam*sizeof
+ * 
+ * @param tam (int) : tamanho total do vetor.
+ * @param sizeof (int) : tamanho dos elementos do vetor.
+ * @return (real_t*) : ponteiro para esse vetor.
+ */
+real_t *alocarVetor(int tam, int sizeof);
+
+/**
+ * @brief Copia o vetor origem para o vetor destino.
+ * 
+ * @param dest (real_t*) : Vetor destino.
+ * @param orig (real_t*) : Vetor origem.
+ * @param tam (int) : Tamanho do vetor.
+ */
+void copiarVetor(real_t *dest, real_t *orig, int tam);
+
 #endif // __UTILS_H__
 

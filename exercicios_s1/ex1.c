@@ -3,7 +3,7 @@ Exercício 1 - Representação numérica.
 A) 
     * somaSequencia(float *dados, unsigned int tam): soma todos os dados do vetor.
     * somaPar(float *dados, unsigned int tam): soma todos os elementos do vetor, porém usando
-    * divisão e conquista.
+    * divisão e conquista. Soma os elementos 2 a 2.
 B)
     O resultado de somaPar é mais preciso.
     o somaSequencia() vai somando os números sequencialmente o que vai gerando números com expoentes diferentes, 
@@ -12,8 +12,8 @@ B)
 
 C) 
     A medida que o NUM_elementos vai aumentando a soma perdendo precisão. Isso ocorre porque a precisão de um float são 7 digitos (24 bit), então
-    a partir de um certo momento, será somado um número com um expoente muito grande com um muito pequeno. A parte muito pequena será ignorada
-    (ou truncada) e ficará somento os primeiros dígitos do float. 
+    a partir de um certo momento, será somado um número com um expoente muito grande com um muito pequeno. 
+    A parte muito pequena será ignorada (ou truncada) e ficará somente os primeiros dígitos do float. 
 
 */
 

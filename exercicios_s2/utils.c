@@ -21,3 +21,26 @@ double timestamp (void)
   return ( (double) tp.tv_sec*1.0e3 + (double) tp.tv_nsec*1.0e-6 );
 }
 
+real_t *alocarVetor (int tam, int size) {
+
+    real_t *v;
+
+    v = malloc(tam*size);
+    if (! v) {
+        perror("Não foi possível alocar espaço para o vetor");
+        return NULL;
+    }
+
+    memset(v, 0.0, tam*size);
+    return v;
+
+}
+
+void copiarVetor(real_t *dest, real_t *orig, int tam) {
+
+    for (int i = 0; i < tam; ++i) {
+        dest[i] = orig[i];
+    }
+
+
+}
