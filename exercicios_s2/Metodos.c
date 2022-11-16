@@ -30,7 +30,7 @@ void retroSubstituicao(SistLinear_t *SL, real_t *x) {
         real_t soma = 0.0;
 
         // Soma os elementos da linha i
-        soma = somarLinhas(SL->A[i], i + 1, SL->n, x);
+        soma = somarColunas(SL->A[i], i + 1, SL->n, x);
 
         // Descobre a incognita daquela linha
         x[i] = (SL->b[i] - soma)/SL->A[i][i];   // (termo independete - soma da linha)/coeficiente do x que ainda não foi descoberto
@@ -44,7 +44,7 @@ void trocarLinhas(SistLinear_t* SL, int i, int max_pivo){
     real_t aux;
     
     //Percorre todas as colunas das linhas do pivô e da linha que você vai trocar
-    for (int coluna = 0; SL->n; coluna++) {
+    for (int coluna = 0; coluna < SL->n; coluna++) {
 
         //Troca os valores das linhas
         aux = SL->A[max_pivo][coluna];
@@ -63,24 +63,28 @@ void trocarLinhas(SistLinear_t* SL, int i, int max_pivo){
 int encontrarPivoMax(SistLinear_t *SL, int comeco) {
 
     // Inicializa com os primeiros valores
-    real_t maior = SL->A[comeco][comeco];
+    real_t maior = ABS(SL->A[comeco][comeco]);
     int maior_idx = comeco;
 
     // Percorre a coluna do pivo
-    for (int j = comeco + 1; j < SL->n; j++) {
+    for (int j = comeco + 1; j < SL->n; ++j) {
 
         // Verifica se o maior valor absoluto é maior que o valor maior antigo, se for troca os valores
         if (ABS(SL->A[j][comeco]) > maior) {
-            maior = ABS(SL->A[comeco][j]);
+            maior = ABS(SL->A[j][comeco]);
             maior_idx = j;
         }
     }
+    return maior_idx;
 }
 
 
 int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
 
     // Percorre as linhas da Matriz de coeficientes
+    double t_inicio, t_fim;
+
+    t_inicio = timestamp();
     for (int i = 0; i < SL->n; ++i) {
         int max_pivo = encontrarPivoMax(SL, i); // Encontra o maior pivô para fazer o pivoteamento
         if (i != max_pivo)  // Se o maior pivô for diferente de i (mesma linha)
@@ -106,6 +110,9 @@ int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
     }
 
     retroSubstituicao(SL, x);
+    t_fim = timestamp();
+
+    (*tTotal) = t_fim - t_inicio;
 
     return 0;
 }
@@ -149,13 +156,19 @@ real_t calcularNormaMaxErroAbsoluto(real_t *aux, real_t *x, int tam) {
 int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 {
 
+    SistLinear_t *SL_original = alocaSisLin(SL->n);
+    cpySisLin(SL_original, SL);
+
     int n_interacoes = 0;
+    double t_inicial, t_final;
 
     real_t *aux = alocarVetor(SL->n, sizeof(real_t));
     memset(x, 0.0, (SL->n)*sizeof(real_t)); //Pode dar seg fault aqui
     
+
+    t_inicial = timestamp();
     // Enquanto o número máximo de interações não foi atingido e a norma máxima do erro é maior que o erro, executa esse método.
-    while ((n_interacoes < MAXIT) && (calcularNormaMaxErroAbsoluto(aux, x, SL->n) > ERRO)) {
+    while ((n_interacoes < MAXIT)) {
         
         copiarVetor(aux, x, SL->n);
 
@@ -167,17 +180,27 @@ int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
             for (int j = 0; j < SL->n; ++j) {
                 
                 // Se não foi a coluna da diagonal principal
-                if (j != i)
-
-                    // Faz a soma levando em conta os valores das incógnitas já calculado
-                    soma -= SL->A[i][j]*x[j]; 
+                if (j == i) {
+                    continue;
+                } 
+                // Faz a soma levando em conta os valores das incógnitas já calculado
+                soma = soma - SL->A[i][j]*x[j];
             }
-            // Calcula a incógnita 'i'
-            x[i] = (1/SL->A[i][i])*soma;
+           // Calcula a incógnita 'i'
+           x[i] = (1/SL->A[i][i])*soma;
         }
-        // Incrementa o número de interações
-        ++n_interacoes;
+        
+        if (calcularNormaMaxErroAbsoluto(aux, x, SL->n) < ERRO) {
+            return n_interacoes;
+        }
+
+       // Incrementa o número de interações
+       ++n_interacoes;
+       cpySisLin(SL, SL_original);
     }
+    t_final = timestamp();
+    (*tTotal) = t_final - t_inicial;
+    return n_interacoes;
 
 }
 
@@ -185,11 +208,18 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 {
 
     int i = 0;
-    double tempo;
+    double t_inicial, t_final, lixo;
+    real_t *w = alocarVetor(SL->n, sizeof(real_t)), *x_novo = alocarVetor(SL->n, sizeof(real_t));
+
+    SistLinear_t *SL_original = alocaSisLin(SL->n);
+    cpySisLin(SL_original, SL);
+
     real_t *residuo = alocarVetor(SL->n, sizeof(real_t));   //Vetor de resíduo
 
+    t_inicial = timestamp();
+
     // Enquanto o número de interações for menor que tTotal
-    while ((i < tTotal)) {
+    while ((i < MAXIT)) {
         
         // Percorre a matriz
         for (int j = 0; j < SL->n; ++j){
@@ -205,21 +235,49 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 
         // Verifica se a norma L2 do residuo calculado é menor que o erro, se sim, para o programa e retorna i
         if (normaL2Residuo(SL, residuo) < erro) {
+            free(x_novo);
+            free(w);
+            free(residuo);
+            return i;
+        }
+
+
+        // Se não for, calcula novamente a eliminação de Gauss com o resíduo como termo independente.
+        cpySisLin(SL, SL_original);
+        SL->b = residuo;
+        if (eliminacaoGauss(SL, w, &lixo) < 0 ) {
+            fprintf(stderr, "Deu algum erro na eliminação de Gauss");
+            free(x_novo);
+            free(w);
+            free(residuo);
+            return -1;
+        }
+
+        // Valor das incógnitas atuais.
+        for (int j = 0; j < SL->n; ++j) {
+            x_novo[j] = x[i] + w[i]; 
+        }
+
+        if (calcularNormaMaxErroAbsoluto(x, x_novo, SL->n) < erro) {
+            x_novo = x;
+
+            free(x);
+            free(w);
+            free(residuo);
             return i;
         }
 
         ++i;    // Incrementa o número de interações.
-
-        // Se não for, calcula novamente a eliminação de Gauss com o resíduo como termo independente.
-        //Aqui eu tenho que passar o resíduo no SL->b, 
-        // também tenho que mandar uma cópia do Sistema Linear
-        if (eliminacaoGauss(SL, x, &tempo) < 0 ) {
-            perror("Deu algum erro na eliminação de Gauss");
-            return -1;
-        }
-
     }
+    
+    free(x_novo);
+    free(w);
+    free(residuo);
 
+    t_final = timestamp();
+    (*tTotal) = t_final - t_inicial;
+    
+    return i;
 
 }
 

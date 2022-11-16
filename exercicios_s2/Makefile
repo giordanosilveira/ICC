@@ -1,5 +1,5 @@
     CC     = gcc -g
-    CFLAGS = 
+    CFLAGS = -Wall
     LFLAGS = -lm
 
       PROG = labSisLin
@@ -17,9 +17,9 @@ $(PROG):  $(OBJS)
 	$(CC) -o $@ $^ $(LFLAGS)
 
 clean:
-	@rm -f *~ *.bak
+	@rm -f *~ *.bak *.o
 
 purge:   clean
-	@rm -f *.o core a.out
+	@rm -f core a.out
 	@rm -f $(PROG)
 

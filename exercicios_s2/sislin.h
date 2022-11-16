@@ -24,10 +24,12 @@ SistLinear_t* alocaSisLin (unsigned int n);
 void liberaSisLin (SistLinear_t *SL);
 void iniSisLin (SistLinear_t *SL, tipoSistLinear_t tipo, real_t coef_max);
 
-// Leitura e impressão de sistemas lineares
+// Leitura, impressão e cópia de sistemas lineares
 SistLinear_t *lerSisLin ();
 void prnSisLin (SistLinear_t *SL);
 void prnVetor (real_t *vet, unsigned int n);
+void prnTabela(int tam_sisl, int nIntRef, int nIntGs, double *tempos, real_t *residuos);
+void cpySisLin (SistLinear_t *dest, SistLinear_t *ori);
 
 #endif // __SISLIN_H__
 
