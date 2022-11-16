@@ -208,75 +208,110 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 {
 
     int i = 0;
-    double t_inicial, t_final, lixo;
-    real_t *w = alocarVetor(SL->n, sizeof(real_t)), *x_novo = alocarVetor(SL->n, sizeof(real_t));
+    double t_inicial, t_final, lixo;                        //Tempo inicial, final, lixo (eliminação de gauss interna)
 
-    SistLinear_t *SL_original = alocaSisLin(SL->n);
+    real_t *w = alocarVetor(SL->n, sizeof(real_t));         //erro.
+    real_t *x0 = alocarVetor(SL->n, sizeof(real_t));        //Vetor com as soluções anteriores.
+    real_t *residuo = alocarVetor(SL->n, sizeof(real_t));   //Vetor de resíduo.
+
+    SistLinear_t *SL_original = alocaSisLin(SL->n);         //Sistema Linear original
+    
     cpySisLin(SL_original, SL);
-
-    real_t *residuo = alocarVetor(SL->n, sizeof(real_t));   //Vetor de resíduo
-
     t_inicial = timestamp();
 
     // Enquanto o número de interações for menor que tTotal
     while ((i < MAXIT)) {
         
-        // Percorre a matriz
+        // Percorre as 'linhas' da sistema linear
         for (int j = 0; j < SL->n; ++j){
             real_t soma = 0.0;
             for (int k = 0; k < SL->n; ++k){
+
                 // Realiza a soma das colunas da linha 'j' com suas respctivas soluções
                 soma = soma + SL->A[j][k]*x[k]; 
             
             }
+
             // Calcula o resíduo
             residuo[j] = SL->b[j] - soma;
         }
 
-        // Verifica se a norma L2 do residuo calculado é menor que o erro, se sim, para o programa e retorna i
+        // Verifica se a norma L2 do residuo calculado é menor que o erro, se sim
         if (normaL2Residuo(SL, residuo) < erro) {
-            free(x_novo);
+
+            //calcula o tempo do método,
+            t_final = timestamp();              //tempo final do método
+            (*tTotal) = t_final - t_inicial;    //Tempos total do método
+    
+            //libera as estruturas usadas internamente.
+            free(x0);
             free(w);
             free(residuo);
+
+            //retorna o número de interações.
             return i;
         }
 
 
-        // Se não for, calcula novamente a eliminação de Gauss com o resíduo como termo independente.
+        // Se não, calcula novamente a eliminação de Gauss com o resíduo como termo independente e w (erro) como
+        // as incóginitas.
         cpySisLin(SL, SL_original);
         SL->b = residuo;
+
+        //Verifica se a eliminação de gauss deu errado, se deu errado, 
         if (eliminacaoGauss(SL, w, &lixo) < 0 ) {
             fprintf(stderr, "Deu algum erro na eliminação de Gauss");
-            free(x_novo);
+
+            //Calcula o tempo final do método.
+            t_final = timestamp();           //tempo final do método
+            (*tTotal) = t_final - t_inicial; //Calcula o tempo final do método
+
+            // libera as estruturas usadas internamente
+            free(x0);
             free(w);
             free(residuo);
+            
+            // e retorna um código de erro.
             return -1;
         }
 
-        // Valor das incógnitas atuais.
+        // Se não deu errado, w está com o erro das variáveis, então, é preciso descobrir a nova solução.
+        // Logo, percorre o vetor de soluções,
         for (int j = 0; j < SL->n; ++j) {
-            x_novo[j] = x[i] + w[i]; 
+            x0[j] = x[j];       //guarda a solução antiga e
+            x[j] = x[i] + w[i]; //calcula a solução nova. (antiga + erro)
         }
 
-        if (calcularNormaMaxErroAbsoluto(x, x_novo, SL->n) < erro) {
-            x_novo = x;
+        // Calcula a norma máxima do erro Absoluto. Se for menor que um erro tolerável, 
+        if (calcularNormaMaxErroAbsoluto(x, x0, SL->n) < erro) {
+            
+            //calcula o tempo final do método,
+            t_final = timestamp();           //tempo final do método
+            (*tTotal) = t_final - t_inicial; //Tempos total do método
 
-            free(x);
+            // libera as estruturas usadas internamente,
+            free(x0);
             free(w);
             free(residuo);
+
+            // e retorna o número de interações.
             return i;
         }
 
-        ++i;    // Incrementa o número de interações.
+        ++i;    // incrementa o número de interações.
     }
     
-    free(x_novo);
+    // Se terminou as interações,
+    // libera as estruturas usadas internamente
+    free(x0);
     free(w);
     free(residuo);
 
-    t_final = timestamp();
-    (*tTotal) = t_final - t_inicial;
+    //calcula o tempo do método,
+    t_final = timestamp();           //tempo final do método
+    (*tTotal) = t_final - t_inicial; //Calcula o tempo final do método
     
+    //retorna o numero de interações (MAXIT)
     return i;
 
 }
