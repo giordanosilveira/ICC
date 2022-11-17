@@ -30,7 +30,7 @@ void retroSubstituicao(SistLinear_t *SL, real_t *x) {
         real_t soma = 0.0;
 
         // Soma os elementos da linha i
-        soma = somarColunas(SL->A[i], i + 1, SL->n, x);
+        soma = somarColunas(SL->A[i], i + 1, SL->n-1, x);
 
         // Descobre a incognita daquela linha
         x[i] = (SL->b[i] - soma)/SL->A[i][i];   // (termo independete - soma da linha)/coeficiente do x que ainda não foi descoberto

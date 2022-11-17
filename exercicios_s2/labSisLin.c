@@ -15,11 +15,11 @@ int main ()
     
     SistLinear_t *SL, *SL_original;
 
-    for (int i = 0; i < 1; ++i) {
-        real_t *x = alocarVetor(10, sizeof(real_t));
+    for (int i = 1; i < 2; ++i) {
+        real_t *x = alocarVetor(tamanhos[i], sizeof(real_t));
 
         SL = alocaSisLin(tamanhos[i]);
-        iniSisLin(SL, hilbert, COEF_MAX);
+        iniSisLin(SL, diagDominante, COEF_MAX);
         
         SL_original = alocaSisLin(tamanhos[i]);
         cpySisLin(SL_original, SL);
