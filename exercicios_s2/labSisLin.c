@@ -19,7 +19,7 @@ int main ()
         real_t *x = alocarVetor(10, sizeof(real_t));
 
         SL = alocaSisLin(tamanhos[i]);
-        iniSisLin(SL, diagDominante, COEF_MAX);
+        iniSisLin(SL, hilbert, COEF_MAX);
         
         SL_original = alocaSisLin(tamanhos[i]);
         cpySisLin(SL_original, SL);
@@ -32,6 +32,13 @@ int main ()
         residuos[0] = normaL2Residuo(SL, x);
         printf("Vetor das incógnitas:\n\n");
         prnVetor(x, tamanhos[i]);
+        printf("Resposta Segunda linha (aproximada):\n");
+
+        real_t soma = 0.0;
+        for (int i = 0; i < SL_original->n; ++i) {
+          soma = soma + SL_original->A[5][i]*x[i];
+        }
+        printf("%lf\n", soma);
 
 
         cpySisLin(SL, SL_original);
@@ -40,6 +47,13 @@ int main ()
         residuos[1] = normaL2Residuo(SL, x);
         printf("Vetor das incógnitas:\n");
         prnVetor(x, tamanhos[i]);
+        printf("Resposta Segunda linha (aproximada):\n");
+
+        soma = 0.0;
+        for (int i = 0; i < SL_original->n; ++i) {
+          soma = soma + SL_original->A[5][i]*x[i];
+        }
+        printf("%lf\n", soma);
         
 
         printf("Gauss-Sidel:\n\n");
@@ -48,6 +62,13 @@ int main ()
         residuos[2] = normaL2Residuo(SL, x);
         printf("Vetor das incógnitas:\n");
         prnVetor(x, tamanhos[i]);
+        printf("Resposta Segunda linha (aproximada):\n");
+
+        soma = 0.0;
+        for (int i = 0; i < SL_original->n; ++i) {
+          soma = soma + SL_original->A[5][i]*x[i];
+        }
+        printf("%lf\n", soma);
 
 
         prnTabela(tamanhos[i], nIntRef, nIntGs, tempos, residuos);

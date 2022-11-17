@@ -225,9 +225,10 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
         // Percorre as 'linhas' da sistema linear
         for (int j = 0; j < SL->n; ++j){
             real_t soma = 0.0;
+
             for (int k = 0; k < SL->n; ++k){
 
-                // Realiza a soma das colunas da linha 'j' com suas respctivas soluções
+                // Realiza a soma das colunas da linha 'j' com suas respectivas soluções
                 soma = soma + SL->A[j][k]*x[k]; 
             
             }
@@ -237,7 +238,9 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
         }
 
         // Verifica se a norma L2 do residuo calculado é menor que o erro, se sim
-        if (normaL2Residuo(SL, residuo) < erro) {
+        real_t retorno = normaL2Residuo(SL, residuo);
+        if ( retorno < erro) {
+            fprintf(stderr, "Norma L2 do resíduo é menor que o erro\n");
 
             //calcula o tempo do método,
             t_final = timestamp();              //tempo final do método
@@ -279,12 +282,13 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
         // Logo, percorre o vetor de soluções,
         for (int j = 0; j < SL->n; ++j) {
             x0[j] = x[j];       //guarda a solução antiga e
-            x[j] = x[i] + w[i]; //calcula a solução nova. (antiga + erro)
+            x[j] = x[j] + w[j]; //calcula a solução nova. (antiga + erro)
         }
 
         // Calcula a norma máxima do erro Absoluto. Se for menor que um erro tolerável, 
         if (calcularNormaMaxErroAbsoluto(x, x0, SL->n) < erro) {
-            
+            fprintf(stderr, "Norma Máxima do erro Absoluto é menor que o erro\n");
+
             //calcula o tempo final do método,
             t_final = timestamp();           //tempo final do método
             (*tTotal) = t_final - t_inicial; //Tempos total do método

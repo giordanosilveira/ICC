@@ -148,15 +148,18 @@ void prnVetor (real_t *v, unsigned int n)
 
 void prnTabela(int tam_sisl, int nIntRef, int nIntGs, double *tempos, real_t *residuos) {
 
-    printf("n\tt_egp\tnormaResiduo_egp\tt_gs\tit_gs\tnormaResiduo_gs\tt_ref\tit_ref\tnormaResiduo_ref\n");
-    printf("%d\t%lf\t%lf\t%lf\t%d\t%lf\t%lf\t%d\t%tf\n",tam_sisl, tempos[0], residuos[0], tempos[2], nIntGs, residuos[2], tempos[1], nIntRef, residuos[1]);
+    printf("n      t_egp      normaResiduo_egp      t_gs      it_gs      normaResiduo_gs      t_ref      it_ref      normaResiduo_ref\n");
+    printf("%d\t%lf\t%lf\t%lf\t%d\t%lf\t%lf\t%d\t%lf\n",tam_sisl, tempos[0], residuos[0], tempos[2], nIntGs, residuos[2], tempos[1], nIntRef, residuos[1]);
 
 }
 
 
 void cpySisLin (SistLinear_t *dest, SistLinear_t *ori) {
 
-    dest->b = ori->b;
+    for (int i = 0; i < dest->n; ++i){
+        dest->b[i] = ori->b[i];
+    }
+
     dest->n = ori->n;
 
     for (int i = 0; i < ori->n; ++i){
