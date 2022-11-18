@@ -148,8 +148,8 @@ void prnVetor (real_t *v, unsigned int n)
 
 void prnTabela(int tam_sisl, int nIntRef, int nIntGs, double *tempos, real_t *residuos) {
 
-    printf("n      t_egp      normaResiduo_egp      t_gs      it_gs      normaResiduo_gs      t_ref      it_ref      normaResiduo_ref\n");
-    printf("%d\t%lf\t%lf\t%lf\t%d\t%lf\t%lf\t%d\t%lf\n",tam_sisl, tempos[0], residuos[0], tempos[2], nIntGs, residuos[2], tempos[1], nIntRef, residuos[1]);
+    printf("%s%10s      %10s%9s%15s%25s%10s%15s%25s \n","n","t_egp","normaResiduo_egp","t_gs","it_gs","normaResiduo_gs","t_ref","it_ref","normaResiduo_ref");
+    printf("%d%12g%10g%22g%8d%16g%25g%7d%21g\n",tam_sisl, tempos[0], residuos[0], tempos[2], nIntGs, residuos[2], tempos[1], nIntRef, residuos[1]);
 
 }
 

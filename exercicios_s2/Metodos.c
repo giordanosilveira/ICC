@@ -1,11 +1,36 @@
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "utils.h"
 #include "sislin.h"
 #include "Metodos.h"
+
+int testarSL(SistLinear_t *SL) {
+
+    
+    // Testa para ver se o último termo da matriz é igual a 0 (DBL_EPSILON da máquina), se for,
+    if ((SL->A[SL->n-1][SL->n-1] <= DBL_EPSILON) && (SL->A[SL->n-1][SL->n-1] > -DBL_EPSILON)) {
+
+        // testa para ver se a resposta é maior que zero, se for, o sistema é Impossível,
+        if (SL->b[SL->n - 1] > DBL_EPSILON) {
+            fprintf(stderr, "O Sistema Linerar é impossível\n");
+            return -1;
+        }
+
+        // caso não, o sistema é indeterminado
+        else {
+            fprintf(stderr, "Ultimo elemento da matriz de coeficiente -> %1.15lf, Último elemento dos termos independentes após as transformações ->%1.15lf\n", SL->A[SL->n-1][SL->n-1], SL->b[SL->n - 1]);
+            fprintf(stderr, "O Sistema Linear é possível porém indeterminado\n");
+            return -2;
+        }
+    }
+
+    return 0;
+
+}
 
 
 real_t somarColunas(real_t * linha, int i, int n, real_t *x) {
@@ -34,6 +59,17 @@ void retroSubstituicao(SistLinear_t *SL, real_t *x) {
 
         // Descobre a incognita daquela linha
         x[i] = (SL->b[i] - soma)/SL->A[i][i];   // (termo independete - soma da linha)/coeficiente do x que ainda não foi descoberto
+
+        if (isnan(x[i]) != 0) {
+            fprintf(stderr, "Houve um Not a Number\n");
+            return;
+        }
+            
+        else if (isinf(x[i]) != 0) { 
+            fprintf(stderr, "Houve um Número infinito\n");
+            return;
+        }
+            
     }
 
 }
@@ -108,6 +144,10 @@ int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
         }
         
     }
+
+    int teste = testarSL(SL);
+    if (teste < 0)
+        return teste;
 
     retroSubstituicao(SL, x);
     t_fim = timestamp();
@@ -186,9 +226,23 @@ int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
                 // Faz a soma levando em conta os valores das incógnitas já calculado
                 soma = soma - SL->A[i][j]*x[j];
             }
-           // Calcula a incógnita 'i'
-           x[i] = (1/SL->A[i][i])*soma;
+            // Calcula a incógnita 'i'
+            x[i] = (1/SL->A[i][i])*soma;
+        
+            if (isnan(x[i]) != 0) {
+                fprintf(stderr, "Houve um Not a Number\n");
+                return -1;
+            }
+
+            else if (isinf(x[i]) != 0)
+            {
+                fprintf(stderr, "Houve um Número infinito\n");
+                return -1;
+            }
+            
+        
         }
+
         
         if (calcularNormaMaxErroAbsoluto(aux, x, SL->n) < ERRO) {
             return n_interacoes;

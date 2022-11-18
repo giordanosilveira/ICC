@@ -108,5 +108,15 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal);
 int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal);
 
 
+/**
+ * @brief Testa para ver se o Sistema Linear é impossível ou indeterminado
+ * ou SPD.
+ * 
+ * @param SL (SistLinear_t *) : Sistema Linear 
+ * @return (int) : 0 se é um SPD, -1 se é um sistema impossível ou indeterminado.
+ */
+int testarSL(SistLinear_t *SL);
+
+
 #endif // __METODOS_H__
 
