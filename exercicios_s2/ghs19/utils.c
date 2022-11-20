@@ -1,3 +1,5 @@
+//Giordano Henrique Silveira GRR20197154
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -25,13 +27,16 @@ real_t *alocarVetor (int tam, int size) {
 
     real_t *v;
 
-    v = malloc(tam*size);
+    v = (real_t *)calloc(tam, sizeof(real_t));
     if (! v) {
         perror("Não foi possível alocar espaço para o vetor");
         return NULL;
     }
 
-    memset(v, 0.0, tam*size);
+    for (int i = 0; i < tam; ++i) {
+        v[i] = 0.0;
+    }
+
     return v;
 
 }

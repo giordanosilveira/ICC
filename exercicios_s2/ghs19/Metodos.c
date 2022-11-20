@@ -1,3 +1,5 @@
+//Giordano Henrique Silveira GRR20197154
+
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -15,16 +17,15 @@ int testarSL(SistLinear_t *SL) {
     if ((SL->A[SL->n-1][SL->n-1] <= DBL_EPSILON) && (SL->A[SL->n-1][SL->n-1] > -DBL_EPSILON)) {
 
         // testa para ver se a resposta é maior que zero, se for, o sistema é Impossível,
-        if (SL->b[SL->n - 1] > DBL_EPSILON) {
-            fprintf(stderr, "O Sistema Linerar é impossível\n");
-            return -1;
+        if ((SL->b[SL->n - 1] > DBL_EPSILON) || (SL->b[SL->n - 1] < DBL_EPSILON)) {
+            fprintf(stderr, "Ultimo elemento da matriz de coeficiente -> %1.15lf, Último elemento dos termos independentes após as transformações ->%1.15lf\n", SL->A[SL->n-1][SL->n-1], SL->b[SL->n - 1]);
+            return -3;
         }
 
         // caso não, o sistema é indeterminado
-        else {
+        else if ( (SL->b[SL->n - 1] <= DBL_EPSILON) && (SL->b[SL->n - 1] > -DBL_EPSILON)) {
             fprintf(stderr, "Ultimo elemento da matriz de coeficiente -> %1.15lf, Último elemento dos termos independentes após as transformações ->%1.15lf\n", SL->A[SL->n-1][SL->n-1], SL->b[SL->n - 1]);
-            fprintf(stderr, "O Sistema Linear é possível porém indeterminado\n");
-            return -2;
+            return -4;
         }
     }
 
@@ -48,7 +49,7 @@ real_t somarColunas(real_t * linha, int i, int n, real_t *x) {
 }
 
 
-void retroSubstituicao(SistLinear_t *SL, real_t *x) {
+int retroSubstituicao(SistLinear_t *SL, real_t *x) {
 
     // Percorre o vetor das incógnitas da última para a primeira
     for (int i = SL->n-1; i >= 0; --i){
@@ -61,16 +62,15 @@ void retroSubstituicao(SistLinear_t *SL, real_t *x) {
         x[i] = (SL->b[i] - soma)/SL->A[i][i];   // (termo independete - soma da linha)/coeficiente do x que ainda não foi descoberto
 
         if (isnan(x[i]) != 0) {
-            fprintf(stderr, "Houve um Not a Number\n");
-            return;
+            return -2;
         }
             
         else if (isinf(x[i]) != 0) { 
-            fprintf(stderr, "Houve um Número infinito\n");
-            return;
+            return -1;
         }
             
     }
+    return 0;
 
 }
 
@@ -122,15 +122,23 @@ int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
 
     t_inicio = timestamp();
     for (int i = 0; i < SL->n; ++i) {
-        int max_pivo = encontrarPivoMax(SL, i); // Encontra o maior pivô para fazer o pivoteamento
-        if (i != max_pivo)  // Se o maior pivô for diferente de i (mesma linha)
-            trocarLinhas(SL, i, max_pivo);  // Troca as linhas.
+
+        int max_pivo = encontrarPivoMax(SL, i);     // Encontra o maior pivô para fazer o pivoteamento
+        if (i != max_pivo)                          // Se o maior pivô for diferente de i (mesma linha)
+            trocarLinhas(SL, i, max_pivo);          // Troca as linhas.
 
         // Percorrer as linhas abaixo do pivô (linha inicial i)
         for (int k = i + 1; k < SL->n; ++k){
 
             // Calcula o m
             real_t m = SL->A[k][i] / SL->A[i][i];
+
+            // Verificando se o "m" calculado não é um número infinito ou NaN
+            if (isnan(m) != 0)
+                return -2;
+            if (isinf(m) != 0 )
+                return -1;
+
             
             // Zera o elemento na linha abaixo do pivô
             SL->A[k][i] = 0.0;
@@ -146,14 +154,23 @@ int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
     }
 
     int teste = testarSL(SL);
-    if (teste < 0)
+    if (teste < 0) {
+
+        t_fim = timestamp();
+        (*tTotal) = t_fim - t_inicio;
         return teste;
+    }
 
-    retroSubstituicao(SL, x);
+    teste = retroSubstituicao(SL, x);
+    if (teste < 0) {
+        t_fim = timestamp();
+        (*tTotal) = t_fim - t_inicio;
+        return teste;
+    } 
+    
     t_fim = timestamp();
-
     (*tTotal) = t_fim - t_inicio;
-
+    
     return 0;
 }
 
@@ -165,7 +182,7 @@ real_t normaL2Residuo(SistLinear_t *SL, real_t *x)
     for (int i = 0; i < SL->n; ++i) {
 
         // Soma o quadrado dos elementos das soluções
-        soma = soma + pow(x[i], 2);
+        soma = soma + x[i]*x[i];
     }
 
     // Retorna a raíz quadrada da soma.
@@ -196,14 +213,12 @@ real_t calcularNormaMaxErroAbsoluto(real_t *aux, real_t *x, int tam) {
 int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 {
 
-    SistLinear_t *SL_original = alocaSisLin(SL->n);
-    cpySisLin(SL_original, SL);
 
     int n_interacoes = 0;
     double t_inicial, t_final;
 
     real_t *aux = alocarVetor(SL->n, sizeof(real_t));
-    memset(x, 0.0, (SL->n)*sizeof(real_t)); //Pode dar seg fault aqui
+    memset(x, 0.0, (SL->n)*sizeof(real_t));
     
 
     t_inicial = timestamp();
@@ -214,29 +229,33 @@ int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 
         // Percorrer os vetores de incognitas (serve também para as linhas do matriz de coeficientes)
         for (int i = 0; i < SL->n; ++i){
+            
             real_t soma = SL->b[i];
             
             // Percorre as colunas da linha i 
             for (int j = 0; j < SL->n; ++j) {
                 
                 // Se não foi a coluna da diagonal principal
-                if (j == i) {
-                    continue;
+                if (j != i) {
+                    // Faz a soma levando em conta os valores das incógnitas já calculado
+                    soma = soma - SL->A[i][j]*x[j];
+
                 } 
-                // Faz a soma levando em conta os valores das incógnitas já calculado
-                soma = soma - SL->A[i][j]*x[j];
             }
             // Calcula a incógnita 'i'
             x[i] = (1/SL->A[i][i])*soma;
         
             if (isnan(x[i]) != 0) {
-                fprintf(stderr, "Houve um Not a Number\n");
-                return -1;
+                t_final = timestamp();
+                (*tTotal) = t_final - t_inicial;
+                free(aux);
+                return -2;
             }
 
-            else if (isinf(x[i]) != 0)
-            {
-                fprintf(stderr, "Houve um Número infinito\n");
+            else if (isinf(x[i]) != 0){
+                t_final = timestamp();
+                (*tTotal) = t_final - t_inicial;
+                free(aux);
                 return -1;
             }
             
@@ -245,15 +264,18 @@ int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 
         
         if (calcularNormaMaxErroAbsoluto(aux, x, SL->n) < ERRO) {
+            t_final = timestamp();
+            (*tTotal) = t_final - t_inicial;
+            free(aux);
             return n_interacoes;
         }
 
        // Incrementa o número de interações
        ++n_interacoes;
-       cpySisLin(SL, SL_original);
     }
     t_final = timestamp();
     (*tTotal) = t_final - t_inicial;
+    free(aux);
     return n_interacoes;
 
 }
@@ -267,7 +289,6 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
     real_t *w = alocarVetor(SL->n, sizeof(real_t));         //erro.
     real_t *x0 = alocarVetor(SL->n, sizeof(real_t));        //Vetor com as soluções anteriores.
     real_t *residuo = alocarVetor(SL->n, sizeof(real_t));   //Vetor de resíduo.
-
     SistLinear_t *SL_original = alocaSisLin(SL->n);         //Sistema Linear original
     
     cpySisLin(SL_original, SL);
@@ -276,10 +297,10 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
     // Enquanto o número de interações for menor que tTotal
     while ((i < MAXIT)) {
         
-        // Percorre as 'linhas' da sistema linear
+        // Percorre as linhas da sistema linear
         for (int j = 0; j < SL->n; ++j){
-            real_t soma = 0.0;
 
+            real_t soma = 0.0;
             for (int k = 0; k < SL->n; ++k){
 
                 // Realiza a soma das colunas da linha 'j' com suas respectivas soluções
@@ -289,12 +310,16 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
 
             // Calcula o resíduo
             residuo[j] = SL->b[j] - soma;
+            
+            // Verificando se o resíduo calculado não é um número infinito ou NaN
+            if (isnan(residuo[j]) != 0)
+                return -2;
+            if (isinf(residuo[j]) != 0 )
+                return -1;
         }
 
         // Verifica se a norma L2 do residuo calculado é menor que o erro, se sim
-        real_t retorno = normaL2Residuo(SL, residuo);
-        if ( retorno < erro) {
-            fprintf(stderr, "Norma L2 do resíduo é menor que o erro\n");
+        if (normaL2Residuo(SL, residuo) < erro) {
 
             //calcula o tempo do método,
             t_final = timestamp();              //tempo final do método
@@ -304,6 +329,7 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
             free(x0);
             free(w);
             free(residuo);
+            free(SL_original);
 
             //retorna o número de interações.
             return i;
@@ -313,11 +339,13 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
         // Se não, calcula novamente a eliminação de Gauss com o resíduo como termo independente e w (erro) como
         // as incóginitas.
         cpySisLin(SL, SL_original);
-        SL->b = residuo;
+        for (int i = 0; i < SL->n; ++i) {
+            SL->b[i] = residuo[i];
+        }
 
-        //Verifica se a eliminação de gauss deu errado, se deu errado, 
-        if (eliminacaoGauss(SL, w, &lixo) < 0 ) {
-            fprintf(stderr, "Deu algum erro na eliminação de Gauss");
+        //Verifica se a eliminação de gauss deu errado, se deu errado,
+        int retorno = eliminacaoGauss(SL, w, &lixo); 
+        if (retorno < 0 ) {
 
             //Calcula o tempo final do método.
             t_final = timestamp();           //tempo final do método
@@ -327,9 +355,10 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
             free(x0);
             free(w);
             free(residuo);
+            free(SL_original);
             
             // e retorna um código de erro.
-            return -1;
+            return retorno;
         }
 
         // Se não deu errado, w está com o erro das variáveis, então, é preciso descobrir a nova solução.
@@ -337,23 +366,6 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
         for (int j = 0; j < SL->n; ++j) {
             x0[j] = x[j];       //guarda a solução antiga e
             x[j] = x[j] + w[j]; //calcula a solução nova. (antiga + erro)
-        }
-
-        // Calcula a norma máxima do erro Absoluto. Se for menor que um erro tolerável, 
-        if (calcularNormaMaxErroAbsoluto(x, x0, SL->n) < erro) {
-            fprintf(stderr, "Norma Máxima do erro Absoluto é menor que o erro\n");
-
-            //calcula o tempo final do método,
-            t_final = timestamp();           //tempo final do método
-            (*tTotal) = t_final - t_inicial; //Tempos total do método
-
-            // libera as estruturas usadas internamente,
-            free(x0);
-            free(w);
-            free(residuo);
-
-            // e retorna o número de interações.
-            return i;
         }
 
         ++i;    // incrementa o número de interações.
@@ -364,6 +376,7 @@ int refinamento (SistLinear_t *SL, real_t *x, real_t erro, double *tTotal)
     free(x0);
     free(w);
     free(residuo);
+    free(SL_original);
 
     //calcula o tempo do método,
     t_final = timestamp();           //tempo final do método

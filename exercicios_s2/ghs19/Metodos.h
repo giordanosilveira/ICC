@@ -23,8 +23,9 @@ real_t somarColunas(real_t * linha, int i, int n, real_t *x);
  * 
  * @param SL (SistLinear_t*) : O Sistema Linear
  * @param x (real_t *) : vetor das incógnitas do Sistema Linear.
+ * @return (int) : 0 se tudo ocorreu certo, < 0 caso tenha dado erro.
  */
-void retroSubstituicao(SistLinear_t *SL, real_t *x);
+int retroSubstituicao(SistLinear_t *SL, real_t *x);
 
 
 /**
