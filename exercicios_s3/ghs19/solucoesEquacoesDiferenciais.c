@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
@@ -46,6 +45,37 @@ void inicializarEdo(Edo_t *edo, int n_pontos) {
     edo->yb = CONDICAO_CONTORNO_FINAL;
 
 }
+
+
+void prnVetor(double *v, unsigned int n) {
+
+    printf("\n");
+    for (int i = 0; i < n; ++i)
+        printf("%10g ", v[i]);
+    printf("\n\n");
+
+}
+
+
+void prnSisLin(SLTridiagonal_t *SL) {
+
+    printf("N -> %d\n", SL->n);
+
+    printf("Diagonal superior:");
+    prnVetor(SL->DS, SL->n);
+    
+    printf("Diagonal principal:");
+    prnVetor(SL->D, SL->n);
+    
+    printf("Diagonal inferior:");
+    prnVetor(SL->DI, SL->n);
+
+    printf("Termos independentes:");
+    prnVetor(SL->B, SL->n);
+
+    
+}
+
 
 SLTridiagonal_t *alocarSistLin(int n) {
 
@@ -98,9 +128,13 @@ void gerarTridiagonal(Edo_t *edo, SLTridiagonal_t *SL) {
 
     for (int i = 0; i < edo->n; ++i) {
         xi = edo->a + (i+1)*h;
-        SL->DI[i] = 1 - h * edo->p(xi)/2.0;         //diagonal inferior
-    
+        SL->DI[i] = 1 - h * edo->p(xi)/2.0; //diagonal inferior
+        SL->D[i] = -2 + h*h*edo->q(xi);     //diagonal principal
+        SL->DS[i] = 1 + h*edo->p(xi)/2.0;   //diagonal superior
+        SL->B[i] = h*h*edo->r(xi);          //termo independente        
     }
+    SL->B[0] -= edo->ya * (1 - h*edo->p(edo->a+h)/2.0);
+    SL->B[edo->n-1] -= edo->yb * (1 + h*edo->p(edo->b-h)/2.0);
 
 }
 
@@ -118,7 +152,8 @@ int main () {
         SL = alocarSistLin(n_pontos);
         inicializarEdo(&edo, n_pontos[i]);
 
-        gerarTridiagonal(Edo_t *edo, SLTridiagonal_t *SL);
+        gerarTridiagonal(&edo, SL);
+        prnSisLin(SL);
 
         //gaussSeidelSimplificado();
         //gaussSeidelSemVetores();
