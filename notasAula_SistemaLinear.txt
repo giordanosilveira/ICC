@@ -1,0 +1,17 @@
+
+1) Seja A a matriz de coeficiente, X a matriz e I a indentidade.
+
+    Seja bi o vetor de termos independetes que representa cada coluna da matriz I.
+
+    Seja xi cada coluna da matriz X.
+
+    A solução de cada coluna da matriz X é dado por A*xi = bi. Ou seja, é gerado um sistema linear diferente para cada
+    coluna da matriz X. 
+
+    a) A decomposição LU é mais indicado para esse caso, pois, uma vez feita a fatoração LU, podemos utilizar essa matriz sem precisar calcular novamente
+    o sistema linear.
+
+3) Quando os coeficientes do sistema não mudam, porém muda-se os termos independetes. Então, para não precisar recalcular o SL novamente, usa-se a fatoração
+    LU.
+
+4) a) Você evita que aconteça uma possível divisão por 0, ou por um número muito pequeno, o que pode gerar um número infinito, ou número que corrompa o buffer.
