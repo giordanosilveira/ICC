@@ -177,6 +177,42 @@ void gerarTridiagonal(Edo_t *edo, SLTridiagonal_t *SL) {
 }
 
 
+void gaussSeidelSemVetores(Edo_t *edo, double *x, double *tempo) {
+
+    double xi, h;
+    double xi_anterior;
+
+    h = (edo->b - edo->a)/(edo->n+1.0);
+
+    int i = 0;
+    *(tempo) = timestamp();
+    while (i < MAX_IT) {
+
+        double soma = 0.0;
+        xi = edo->a + (0 + 1)*h;    
+        soma = (1 + h*h*edo->p(xi)/2.0)*x[1];   //DS*X[1]   
+        x[0] = ((h*h*edo->r(xi) - edo->ya*(1 - h*edo->p(edo->a+h)/2.0)) - soma)/(-2 + h*h*edo->q(xi));  //(B - soma)/D
+
+        for (int j = 1; j < edo->n-1; ++j) {
+            xi = edo->a + ((j + 1)+1)*h;
+            xi_anterior = edo->a + ((j - 1)+1)*h;
+            soma = (1 + h*edo->p(xi)/2.0)*x[j + 1] + (1 - h*edo->p(xi_anterior)/2.0)*x[j - 1];          //DS*X[j + 1] + DI*X[j - 1]
+            x[j] = ((h*h*edo->r(edo->a + (j + 1)*h)) - soma)/(-2 + h*h*edo->q(edo->a + (j + 1)*h));     //X[j] = (B[j]- soma)/D[j]
+        }
+
+        xi = edo->a + ((edo->n-2)+1)*h;         
+        soma = (1 - h*edo->p(xi)/2.0)*x[edo->n - 2];    //DI[n-2]*x[n-2]
+
+        //X[n-1] = (B[n-1] - soma)/D[n - 1]
+        x[edo->n-1] = ((h*h*edo->r(edo->a + ((edo->n-1) + 1)*h) - edo->yb*(1 + h*edo->p(edo->b-h)/2.0))-soma)/(-2 + h*h*edo->q(edo->a + (edo->n-1+1)*h));
+
+        ++i;
+    }
+    (*tempo) = timestamp() - (*tempo);
+
+}
+
+
 void gaussSeidelSimplificado(SLTridiagonal_t *SL, double *x, double *tempo) {
 
     int i = 0;
@@ -188,7 +224,7 @@ void gaussSeidelSimplificado(SLTridiagonal_t *SL, double *x, double *tempo) {
         double soma = 0.0;
 
         // Primeiro elemento
-        soma = SL->DS[0]*x[0];              
+        soma = SL->DS[0]*x[1];              
         x[0] = (SL->B[0] - soma)/SL->D[0];
 
         // Segundo elemento até o penúltimo
@@ -228,13 +264,14 @@ int main () {
     int n_pontos[3] = {5, 10, 100};
 
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 1; i < 2; ++i) {
 
         double tempo;
         Edo_t edo;
         SLTridiagonal_t *SL;
 
         double *x = (double *)calloc(n_pontos[i], sizeof(double));
+        double *x2 = (double *)calloc(n_pontos[i], sizeof(double));
 
         SL = alocarSistLin(n_pontos[i]);
         inicializarEdo(&edo, n_pontos[i]);
@@ -252,9 +289,18 @@ int main () {
         fprintf(stderr, "Tempo: %g\n\n", tempo);
 
 
-        //gaussSeidelSemVetores();
+        gaussSeidelSemVetores(&edo, x2, &tempo);
+        norma = calcularNormaL2(x2, edo.n);
+
+        fprintf(stderr, "\nGauss-Seidel sem utilizar vetores\n");
+        fprintf(stderr, "\nVetor das incógnitas:");    
+        prnVetor(x2, SL->n);
+        fprintf(stderr, "Norma: %g\n\n", norma);
+        fprintf(stderr, "Tempo: %g\n\n", tempo);
+
         liberarSisLin(SL);
         free(x);
+        free(x2);
     }
 
 
