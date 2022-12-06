@@ -27,9 +27,9 @@ int main () {
     fgets(coeficentes, TAM_COEFICIENTES - 2, stdin);
     p = initPolinomio(&grau, coeficentes);
     prnPolinomio(p);
-
-    calc_polinomio = &calcPolinomio_rapido;
-    newtonRaphson(*p, 0, EPS, MAXIT, &raiz, calc_polinomio);
+    calcPolinomio_lento(*p, 1, &raiz, &raiz);
+    //calc_polinomio = &calcPolinomio_rapido;
+    //newtonRaphson(*p, 0, EPS, MAXIT, &raiz, calc_polinomio);
 
 
 

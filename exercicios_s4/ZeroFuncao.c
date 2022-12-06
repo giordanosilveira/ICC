@@ -19,12 +19,12 @@ double newtonRaphson (Polinomio p, double x0, double eps, int *it, double *raiz,
         x = x0 - px/dpx;            //Proxima possível raiz
 
         //calcula o erro e verifica se ele é menor que o tolerável, se sim, retorna esse erro
-        erro = calcularErro(x, x0); 
-        if (erro < eps) {
-            *it = i;
-            *raiz = x;
-            return erro;
-        }
+        // erro = calcularErro(x, x0); 
+        // if (erro < eps) {
+        //     *it = i;
+        //     *raiz = x;
+        //     return erro;
+        // }
 
         x0 = x;
         ++i;        
@@ -53,12 +53,12 @@ double secante (Polinomio p, double x0, double x1, double eps, int *it, double *
         x = x1;
         x = x - (px1*(x1 - x0))/(px1 - px0);
 
-        erro = calcularErro(x, x1); 
-        if (erro < eps) {
-            *raiz = x;
-            *it = i;
-            return erro;
-        }
+        // erro = calcularErro(x, x1); 
+        // if (erro < eps) {
+        //     *raiz = x;
+        //     *it = i;
+        //     return erro;
+        // }
 
         x0 = x1;
         x1 = x;
@@ -74,15 +74,31 @@ double secante (Polinomio p, double x0, double x1, double eps, int *it, double *
 }
 
 
-void calcPolinomio_rapido(Polinomio p, double x, double *px, double *dpx)
-{
+void calcPolinomio_rapido(Polinomio p, double x, double *px, double *dpx) {
 
+    double soma_px = 0.0, soma_dpx = 0.0;
+    for (int i = p.grau; i > 0; --i){
+        soma_px = soma_px*x + p.p[i];
+        soma_dpx = soma_dpx*x + soma_px; 
+    }
+    soma_px = soma_px*x + p.p[0];
+    
+    *px = soma_px;
+    *dpx = soma_dpx;
 }
 
 
-void calcPolinomio_lento(Polinomio p, double x, double *px, double *dpx)
-{
+void calcPolinomio_lento(Polinomio p, double x, double *px, double *dpx) {
 
+    double soma_px = 0.0, soma_dpx = 0.0;
+    for (int i = 1; i < p.grau + 1; ++i) {
+        soma_px = soma_px + p.p[i]*pow(x, i);
+        soma_dpx = soma_dpx + i*p.p[i]*pow(x, i - 1);
+    }
+    soma_px = soma_px + p.p[0]*1;
+
+    *px = soma_px;
+    *dpx = soma_dpx;
 }
 
 
@@ -117,11 +133,11 @@ Polinomio * initPolinomio(int *grau, string_t coeficientes) {
 
 
     token = strtok(coeficientes, separador);
-    int i = 0;
-    while (token != NULL && i < *grau + 1) {
+    int i = *grau;
+    while (token != NULL && i >= 0) {
         sscanf(token, "%lg", &ptr->p[i]);
         token = strtok(NULL, separador);
-        ++i;
+        --i;
     }
     if (token != NULL) {
         fprintf(stderr, "Número de coeficientes maior que o grau do polinômio\n");
