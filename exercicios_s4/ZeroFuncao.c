@@ -5,6 +5,12 @@
 #include "utils.h"
 #include "ZeroFuncao.h"
 
+
+double calcularErro(double x, double x0) {
+    return ABS((x-x0)/x0)*100;
+}
+
+
 double newtonRaphson (Polinomio p, double x0, double eps, int *it, double *raiz, void (*func)(Polinomio, double, double*, double*)) {
 
     int i = 0;
@@ -19,12 +25,12 @@ double newtonRaphson (Polinomio p, double x0, double eps, int *it, double *raiz,
         x = x0 - px/dpx;            //Proxima possível raiz
 
         //calcula o erro e verifica se ele é menor que o tolerável, se sim, retorna esse erro
-        // erro = calcularErro(x, x0); 
-        // if (erro < eps) {
-        //     *it = i;
-        //     *raiz = x;
-        //     return erro;
-        // }
+        erro = calcularErro(x, x0); 
+        if (erro < eps) {
+            *it = i;
+            *raiz = x;
+            return erro;
+        }
 
         x0 = x;
         ++i;        
@@ -40,7 +46,7 @@ double newtonRaphson (Polinomio p, double x0, double eps, int *it, double *raiz,
 double secante (Polinomio p, double x0, double x1, double eps, int *it, double *raiz, void (*func)(Polinomio, double, double*, double*)) {
 
 
-    double x, px1, px0, dpx, erro, aux;
+    double x, px1, px0, dpx, erro;
     
     int i = 0;
     while (i < MAXIT) {
@@ -50,15 +56,14 @@ double secante (Polinomio p, double x0, double x1, double eps, int *it, double *
         func(p, x1, &px1, &dpx);
 
         //Calcula da próxima raíz
-        x = x1;
-        x = x - (px1*(x1 - x0))/(px1 - px0);
+        x = x1 - (px1*(x1 - x0))/(px1 - px0);
 
-        // erro = calcularErro(x, x1); 
-        // if (erro < eps) {
-        //     *raiz = x;
-        //     *it = i;
-        //     return erro;
-        // }
+        erro = calcularErro(x, x1); 
+        if (erro < eps) {
+            *raiz = x;
+            *it = i;
+            return erro;
+        }
 
         x0 = x1;
         x1 = x;
@@ -83,6 +88,7 @@ void calcPolinomio_rapido(Polinomio p, double x, double *px, double *dpx) {
     }
     soma_px = soma_px*x + p.p[0];
     
+    //fprintf(stderr, "Rapido, %lg %lg\n", soma_px, soma_dpx);
     *px = soma_px;
     *dpx = soma_dpx;
 }
@@ -97,6 +103,7 @@ void calcPolinomio_lento(Polinomio p, double x, double *px, double *dpx) {
     }
     soma_px = soma_px + p.p[0]*1;
 
+    //fprintf(stderr, "Lento, %lg %lg\n", soma_px, soma_dpx);
     *px = soma_px;
     *dpx = soma_dpx;
 }

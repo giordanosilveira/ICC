@@ -45,3 +45,10 @@ void *alocarVetor(int tam, int tam_elementos) {
     return ptr;
 
 }
+
+void prnTabela(string_t metodo, int iteracao, double raiz, double erro, double tempo) {
+
+    
+    fprintf(stderr, "%s\t %d\t\t %g\t %4g\t\t %g\n", metodo, iteracao, raiz, erro, tempo);
+
+}
