@@ -43,3 +43,22 @@ for tam in tamanhos:
             arq2.write("Tamanho,t_matvet,t_matmat\n")
             for m in lista:
                 arq2.write(f"{','.join(m)}\n")
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+arquivos = [("FLOPS_DP", "DP MFLOPS/s"), ("TIME", "TEMPO"), ("L3", "L3 bandwidth [MBytes/s]"), ("L2CACHE", "L2 miss ratio")]
+for arq in arquivos:
+
+    df = pd.read_csv(f"{arq[0]}.csv")
+
+    plt.figure(figsize=(10, 3.7))
+    plt.plot(df["Tamanho"], df["t_matmat"], 'r', label="ColunaMatrizxMatriz")
+    plt.plot(df["Tamanho"], df["t_matvet"], 'g', label="ColunaMatrizxVetor")
+    plt.xlabel('Tamanho')
+    plt.ylabel(f'{arq[1]}')
+    plt.legend(loc='upper left', frameon=False)
+    plt.title(f"{arq[0]}",loc='left')
+
+    plt.savefig(f'{arq[0]}.png')

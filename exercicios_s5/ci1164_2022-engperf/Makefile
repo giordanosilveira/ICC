@@ -30,4 +30,4 @@ clean limpa:
 purge faxina:   clean
 	@echo "Faxina ...."
 	@rm -f  $(PROG) core a.out
-	@rm -f *.png marker.out *.log
+	@rm -f *.png marker.out *.log *.csv

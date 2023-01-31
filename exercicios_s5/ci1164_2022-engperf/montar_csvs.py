@@ -1,38 +1,18 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
-grupos = [("FLOPS_DP","\nDP MFLOP/s"), ("L2CACHE","\nL2 miss ratio"), ("L3","\nL3 bandwidth [MBytes/s]")]
-tamanhos = [64, 100, 128, 1024, 2000, 2048]
+df = pd.read_csv("FLOPS_DP.csv")
 
-for grupo in grupos:
-    lista = list()
-    lista_tempo = list()
-    for tam in tamanhos:
-        with open(f"{tam}_{grupo[0]}.csv", "r") as arq:
-            f = arq.read()
-            f = f.split(',')
-            lista.append([f[i + 1] for i, elemento in enumerate(f) if elemento == grupo[1]])
+plt.figure(figsize=(10, 3.7))
+plt.plot(df["Tamanho"], df["t_matmat"], 'r', label="ColunaMatrizxMatriz")
+plt.plot(df["Tamanho"], df["t_matvet"], 'g', label="ColunaMatrizxVetor")
+plt.xlabel('x label')
+plt.ylabel('y label')
+plt.legend(loc='upper left', frameon=False)
+plt.title("L2CACHE",loc='left')
 
-        lista[len(lista) - 1].insert(0, f"{tam}")
-
-    with open(f"{grupo[0]}.csv", 'w') as arq2:
-            arq2.write("Tamanho,t_matvet,t_matmat\n")
-            for m in lista:
-                arq2.write(f"{','.join(m)}\n")
-
-
-lista = list()
-for tam in tamanhos:
-    with open(f"{tam}_{grupo[0]}.csv", "r") as arq:
-        f = arq.read()
-        f = f.split(',')
-        lista.append([f[i + 1] for i, elemento in enumerate(f) if elemento == "\nRuntime (RDTSC) [s]"])
-
-    lista[len(lista) - 1].insert(0, f"{tam}")
-
-    with open(f"TIME.csv", 'w') as arq2:
-            arq2.write("Tamanho,t_matvet,t_matmat\n")
-            for m in lista:
-                arq2.write(f"{','.join(m)}\n") 
-
+plt.savefig('L2CACHE.png')
 
     
 
